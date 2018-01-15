@@ -7,16 +7,18 @@ import argparse
 Config = ConfigParser()
 Config.read('config.ini')
 
-myapikey = Config.get('Authentication','BS_APIKEY')
-myurl = Config.get('Authentication','DEFAULT_API_URL')
+myapikey = Config.get('Authentication', 'BS_APIKEY')
+myurl = Config.get('Authentication', 'DEFAULT_API_URL')
 
 client = bloomsky_api.BloomSkyAPIClient(api_key=myapikey)
 mydata = client.get_data()
 
 
 parser = argparse.ArgumentParser(description='Access BloomSky weather data')
-parser.add_argument('-s', '--showkeys', action='store_true')
-parser.add_argument('-k', '--key', metavar='', required=True, help='Passes key in and gets result.')
+parser.add_argument('-s', '--showkeys', action='store_true', default=False,
+                    help='Prints a list of keys')
+parser.add_argument('-k', '--key', metavar='', required=False,
+                    help='Passes key in and gets value.')
 args = parser.parse_args()
 
 
@@ -34,33 +36,29 @@ def recursive_items(dictionary):
         else:
             yield (key, value)
 
+
 def getkeys():
-    mydata = getbsdata()
+    keydata = getbsdata()
     keylist = []
-    for items in mydata:
-        for key,value in recursive_items(items):
+    for items in keydata:
+        for key, value in recursive_items(items):
             keylist.append(key)
-        return (keylist)
+        return keylist
+
 
 def getdata(mykey):
-    mydata = getbsdata()
-    keyval = {}
-    for items in mydata:  #unpack the list of dictionaries
-        for key, value in recursive_items(items): #search through the key value pares of the nested dicts for specific key
+    mydat = getbsdata()
+    for items in mydat:
+        for key, value in recursive_items(items):
             if key == mykey:
-                keyval = (key,value)
+                keyval = (key, value)
                 return keyval
 
 
-
-
 if __name__ == '__main__':
-    bsinfo = getdata(args.key)
+
     if args.showkeys:
-        print (args.showkeys)
-    elif args.key:
-        print (bsinfo)
+        print(getkeys())
     else:
-        pass
-
-
+        bsinfo = getdata(args.key)
+        print(bsinfo)
